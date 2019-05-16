@@ -82,19 +82,15 @@ public class HrActivity extends AppCompatActivity {
             }
 
             @Override
-            public void batteryLevelReceived(String identifier, int level) {
-                super.batteryLevelReceived(identifier, level);
-            }
+            public void batteryLevelReceived(String identifier, int level) { Log.d(TAG,"BATTERY LEVEL: " + identifier);}
 
             @Override
             public void hrNotificationReceived(String identifier, PolarHrData data) {
-                super.hrNotificationReceived(identifier, data);
+                Log.d(TAG,"HR value: " + data.hr + " rrsMs: " + data.rrsMs + " rr: " + data.rrs + " contact: " + data.contactStatus + "," + data.contactStatusSupported);
             }
 
             @Override
-            public void polarFtpFeatureReady(String identifier) {
-                super.polarFtpFeatureReady(identifier);
-            }
+            public void polarFtpFeatureReady(String identifier) { Log.d(TAG,"FTP ready");}
         });
 
     }

@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -29,7 +31,8 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<String> deviceNameList = new ArrayList<>();
     Disposable scanDisposable;
     private final static String TAG = MainActivity.class.getSimpleName();
-
+    private long then;
+    private int longClickDuration = 5000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,6 +116,35 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 //bundle.putSerializable("api",api);
+            }
+        });
+
+        findViewById(R.id.textView).setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+
+
+
+
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    then = (long) System.currentTimeMillis();
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    if ((System.currentTimeMillis() - then) > longClickDuration) {
+
+                        Intent intent = new Intent(MainActivity.this,HrActivity.class);
+                        intent.putExtra("device","5092832D");
+                        startActivity(intent);
+
+                        System.out.println("Long Click has happened!");
+                        return false;
+                    } else {
+                        /* Implement short click behavior here or do nothing */
+                        System.out.println("Short Click has happened...");
+                        return false;
+                    }
+                }
+                return true;
             }
         });
 
