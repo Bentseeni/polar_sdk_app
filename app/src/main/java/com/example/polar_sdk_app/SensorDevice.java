@@ -7,6 +7,7 @@ public class SensorDevice
     String deviceAddress;
     String deviceRssi;
     String deviceName;
+    String devicePictureUrl;
     Boolean deviceIsConnectable;
 
     public String getDeviceId() {
@@ -39,6 +40,14 @@ public class SensorDevice
 
     public void setDeviceName(String deviceName) {
         this.deviceName = deviceName;
+    }
+
+    public String getDevicePictureUrl() {
+        return devicePictureUrl;
+    }
+
+    public void setDevicePictureUrl(String devicePictureUrl) {
+        this.devicePictureUrl = devicePictureUrl;
     }
 
     public Boolean getDeviceIsConnectable() {

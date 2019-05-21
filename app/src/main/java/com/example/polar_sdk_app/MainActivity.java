@@ -68,6 +68,8 @@ public class MainActivity extends AppCompatActivity {
                             sensorDevice.setDeviceIsConnectable(polarDeviceInfo.isConnectable);
                             sensorDevice.setDeviceName(polarDeviceInfo.name);
                             sensorDevice.setDeviceRssi(Integer.toString(polarDeviceInfo.rssi));
+                            sensorDevice.setDevicePictureUrl("https://picsum.photos/200");
+
 
                             arrayList.add(sensorDevice);
                             deviceNameList.add(sensorDevice.getDeviceName()+" "+sensorDevice.getDeviceRssi());
@@ -103,11 +105,18 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                final Button scanButton = findViewById(R.id.scan_button);
+
                 try {
                     Intent intent = new Intent(MainActivity.this,HrActivity.class);
                     intent.putExtra("device",arrayList.get(position).getDeviceId());
                     scanDisposable.dispose();
                     scanDisposable = null;
+                    arrayList.clear();
+                    arrayAdapter.clear();
+                    arrayAdapter.notifyDataSetChanged();
+                    scanButton.setText("Scan");
+
                     startActivity(intent);
                 }
                 catch (Exception e){
@@ -149,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && savedInstanceState == null) {
-            this.requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            this.requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION,}, 1);
         }
     }
 
@@ -157,6 +166,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         api.foregroundEntered();
+
     }
 
     @Override
