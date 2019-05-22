@@ -56,7 +56,24 @@ public class SensorDeviceArrayAdapter extends ArrayAdapter<SensorDevice>
         ImageView imageView = convertView.findViewById(R.id.sensor_image);
 
         textViewDevice.setText(sensorDevice.getDeviceName());
-        textViewStrength.setText("Signal strength: "+sensorDevice.getDeviceRssi());
+        int rssi = Integer.parseInt(sensorDevice.getDeviceRssi());
+        if (rssi < -90)
+        {
+            textViewStrength.setText("Signal strength: Bad ");
+        }
+        else if (-90 <= rssi && rssi <= -71)
+        {
+            textViewStrength.setText("Signal strength: Poor ");
+        }
+        else if (-71 < rssi && rssi <=-61)
+        {
+            textViewStrength.setText("Signal strength: Ok ");
+        }
+        else if (rssi > -61)
+        {
+            textViewStrength.setText("Signal strength: Good ");
+        }
+        //textViewStrength.setText("Signal strength: "+sensorDevice.getDeviceRssi());
         Picasso.get().load("https://picsum.photos/200").transform(new RoundedCornersTransformation(15,1)).resize(100,100).centerCrop().into(imageView);
 
 

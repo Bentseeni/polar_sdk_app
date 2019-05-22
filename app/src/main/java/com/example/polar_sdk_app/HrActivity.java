@@ -7,17 +7,24 @@ import android.widget.TextView;
 
 import com.google.protobuf.StringValue;
 
+import org.reactivestreams.Publisher;
+
 import java.util.UUID;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import polar.com.sdk.api.PolarBleApi;
 import polar.com.sdk.api.PolarBleApiCallback;
 import polar.com.sdk.api.errors.PolarInvalidArgument;
 import polar.com.sdk.api.model.PolarDeviceInfo;
 import polar.com.sdk.api.model.PolarHrBroadcastData;
 import polar.com.sdk.api.model.PolarHrData;
+import polar.com.sdk.api.model.PolarOhrPPGData;
+import polar.com.sdk.api.model.PolarOhrPPIData;
+import polar.com.sdk.api.model.PolarSensorSetting;
 
 public class HrActivity extends AppCompatActivity {
 
@@ -40,8 +47,8 @@ public class HrActivity extends AppCompatActivity {
 
         TextView textViewId = this.findViewById(R.id.id_text);
         final TextView textViewHr = this.findViewById(R.id.hr_number);
-        TextView textViewPpg = this.findViewById(R.id.ppg_number);
-        TextView textViewPp = this.findViewById(R.id.pp_number);
+        //TextView textViewPpg = this.findViewById(R.id.ppg_number);
+        TextView textViewPp = this.findViewById(R.id.ppi_number);
         final TextView textViewBatt = this.findViewById(R.id.battery_lvl_text);
 
 
@@ -83,10 +90,14 @@ public class HrActivity extends AppCompatActivity {
             public void accelerometerFeatureReady(String identifier) {Log.d(TAG,"ACC READY: " + identifier); }
 
             @Override
-            public void ppgFeatureReady(String identifier) { Log.d(TAG,"PPG READY: " + identifier);}
+            public void ppgFeatureReady(String identifier) { Log.d(TAG,"PPG READY: " + identifier);
+           // ppgStream();
+            }
 
             @Override
-            public void ppiFeatureReady(String identifier) { Log.d(TAG,"PPI READY: " + identifier);}
+            public void ppiFeatureReady(String identifier) { Log.d(TAG,"PPI READY: " + identifier);
+           // ppiStream();
+            }
 
             @Override
             public void biozFeatureReady(String identifier) {Log.d(TAG,"BIOZ READY: " + identifier);}
@@ -108,7 +119,7 @@ public class HrActivity extends AppCompatActivity {
 
             @Override
             public void hrNotificationReceived(String identifier, PolarHrData data) {
-                Log.d(TAG,"HR value: " + data.hr + " rrsMs: " + data.rrsMs + " rr: " + data.rrs + " contact: " + data.contactStatus + "," + data.contactStatusSupported);
+               // Log.d(TAG,"HR value: " + data.hr + " rrsMs: " + data.rrsMs + " rr: " + data.rrs + " contact: " + data.contactStatus + "," + data.contactStatusSupported);
             }
 
             @Override
@@ -145,11 +156,86 @@ public class HrActivity extends AppCompatActivity {
             });
         }
 
+
+
+    }
+
+    public void ppgStream(){
+        final TextView textView = this.findViewById(R.id.ppg_number);
         if(ppgDisposable == null)
         {
+            ppgDisposable = api.requestPpgSettings(DEVICE_ID).toFlowable().flatMap(new Function<PolarSensorSetting, Publisher<PolarOhrPPGData>>() {
+                @Override
+                public Publisher<PolarOhrPPGData> apply(PolarSensorSetting polarSensorSetting) throws Exception {
+                    return api.startOhrPPGStreaming(DEVICE_ID,polarSensorSetting.maxSettings());
+                }
+            }).observeOn(AndroidSchedulers.mainThread()).subscribe(new Consumer<PolarOhrPPGData>() {
+                @Override
+                public void accept(PolarOhrPPGData polarOhrPPGData) throws Exception {
+                    for (PolarOhrPPGData.PolarOhrPPGSample data : polarOhrPPGData.samples) {
+                      // textView.setText(Integer.toString(data.ppg0));
+                         Log.d(TAG, "    ppg0: " + data.ppg0 + " ppg1: " + data.ppg1 + " ppg2: " + data.ppg2 + "ambient: " + data.ambient);
+                    }
+                    textView.setText(Integer.toString(polarOhrPPGData.samples.get(0).ppg0));
+                }
+            }, new Consumer<Throwable>() {
+                @Override
+                public void accept(Throwable throwable) throws Exception {
+                    Log.e(TAG, "" + throwable.getLocalizedMessage());
 
+                }
+            }, new Action() {
+                @Override
+                public void run() throws Exception {
+                    Log.d(TAG,"complete");
+                }
+            });
         }
+        else {
+            ppgDisposable.dispose();
+            ppgDisposable = null;
+        }
+    }
 
+    public void ppiStream()
+    {
+        if(ppiDisposable == null)
+        {
+            final TextView textView = this.findViewById(R.id.ppi_number);
+            final TextView textViewHr = this.findViewById(R.id.hr_number);
+
+
+            ppiDisposable = api.startOhrPPIStreaming(DEVICE_ID).observeOn(AndroidSchedulers.mainThread()).subscribe(new Consumer<PolarOhrPPIData>() {
+                @Override
+                public void accept(PolarOhrPPIData polarOhrPPIData) throws Exception {
+                    for(PolarOhrPPIData.PolarOhrPPISample sample : polarOhrPPIData.samples) {
+                        Log.d(TAG, "ppi: " + sample.ppi
+                                + " blocker: " + sample.blockerBit + " errorEstimate: " + sample.errorEstimate+sample.skinContactStatus+sample.skinContactSupported+sample.hr);
+                        //textView.setText(sample.ppi+"±"+sample.errorEstimate +" "+ sample.hr);
+                    }
+                    textView.setText(polarOhrPPIData.samples.get(0).ppi+ "±" +polarOhrPPIData.samples.get(0).errorEstimate);
+
+                    if(polarOhrPPIData.samples.get(0).hr != 0) {
+                        textViewHr.setText(Integer.toString(polarOhrPPIData.samples.get(0).hr) );
+                    }
+                }
+            }, new Consumer<Throwable>() {
+                @Override
+                public void accept(Throwable throwable) throws Exception {
+                    Log.e(TAG,""+throwable.getLocalizedMessage());
+                }
+            }, new Action() {
+                @Override
+                public void run() throws Exception {
+                    Log.d(TAG,"complete");
+                }
+            });
+        }
+        else
+        {
+            ppiDisposable.dispose();
+            ppiDisposable = null;
+        }
     }
 
     @Override
