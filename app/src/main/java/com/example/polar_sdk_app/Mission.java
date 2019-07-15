@@ -10,18 +10,22 @@ public class Mission {
     double missionTime;
     int missionValue;
     int missionId;
+    String missionDescription;
+    boolean missionCompleted;
+    Random random;
+    Date now;
+    String missionUnit;
+
+    public String getMissionUnit() { return missionUnit; }
+
+    public void setMissionUnit(String missionUnit) { this.missionUnit = missionUnit; }
 
     public boolean isMissionCompleted() {
         return missionCompleted;
     }
 
-    public void setMissionCompleted(boolean missionCompleted) {
-        this.missionCompleted = missionCompleted;
-    }
+    public void setMissionCompleted(boolean missionCompleted) { this.missionCompleted = missionCompleted; }
 
-    boolean missionCompleted;
-    Random random;
-    Date now;
 
     public String getMissionName() {
         return missionName;
@@ -63,6 +67,10 @@ public class Mission {
         this.missionId = missionId;
     }
 
+    public String getMissionDescription() { return missionDescription; }
+
+    public void setMissionDescription(String missionDescription) { this.missionDescription = missionDescription; }
+
     public Mission() {
 
         now = new Date();
@@ -76,6 +84,8 @@ public class Mission {
             missionTime = now.getTime();
             missionValue = 90;
             missionCompleted = false;
+            missionDescription = "reach";
+            missionUnit = "bps";
         }
         else if (missionId == 1)
         {
@@ -84,6 +94,8 @@ public class Mission {
             missionTime = now.getTime();
             missionValue = 15;
             missionCompleted = false;
+            missionDescription = "travel";
+            missionUnit = "km/h";
         }
         else if (missionId == 2)
         {
@@ -92,6 +104,8 @@ public class Mission {
             missionTime = now.getTime();
             missionValue = 200;
             missionCompleted = false;
+            missionDescription = "travel";
+            missionUnit = "km";
         }
 
 
@@ -109,6 +123,8 @@ public class Mission {
             missionTime = now.getTime();
             missionValue = 90;
             missionCompleted = false;
+            missionDescription = "reach";
+            missionUnit = "bps";
         }
         else if (missionId == 1)
         {
@@ -117,6 +133,8 @@ public class Mission {
             missionTime = now.getTime();
             missionValue = 15;
             missionCompleted = false;
+            missionDescription = "travel";
+            missionUnit = "km/h";
         }
         else if (missionId == 2)
         {
@@ -125,6 +143,8 @@ public class Mission {
             missionTime = now.getTime();
             missionValue = 200;
             missionCompleted = false;
+            missionDescription = "travel";
+            missionUnit = "km";
         }
     }
 }
