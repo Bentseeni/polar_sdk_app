@@ -1,12 +1,21 @@
 package com.example.polar_sdk_app;
 
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.androidplot.Plot;
+import com.androidplot.util.Redrawer;
+import com.androidplot.xy.BarFormatter;
+import com.androidplot.xy.SimpleXYSeries;
+import com.androidplot.xy.XYPlot;
+
 import org.reactivestreams.Publisher;
 
+import java.util.Arrays;
+import java.util.Date;
 import java.util.UUID;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -28,6 +37,11 @@ public class AccActivity extends AppCompatActivity {
     private final static String TAG = MainActivity.class.getSimpleName();
     Disposable accDisposable;
     PolarBleApi api;
+    private SimpleXYSeries xLvlSeries;
+    private SimpleXYSeries yLvlSeries;
+    private SimpleXYSeries zLvlSeries;
+    private Redrawer redrawer;
+    private XYPlot plot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +50,19 @@ public class AccActivity extends AppCompatActivity {
 
         DEVICE_ID = getIntent().getStringExtra("DEVICE_ID");
         api = PolarApi.getInstance(this);
+
+         plot = findViewById(R.id.plot);
+
+        xLvlSeries = new SimpleXYSeries("X");
+        yLvlSeries = new SimpleXYSeries("Y");
+        zLvlSeries = new SimpleXYSeries("Z");
+
+        plot.addSeries(xLvlSeries, new BarFormatter(Color.rgb(0,200,0),Color.rgb(0,80,0)));
+        plot.addSeries(yLvlSeries, new BarFormatter(Color.rgb(200,0,0),Color.rgb(0,80,0)));
+        plot.addSeries(zLvlSeries, new BarFormatter(Color.rgb(0,0,200),Color.rgb(0,80,0)));
+
+        redrawer = new Redrawer(Arrays.asList(new Plot[]{plot}
+        ),100,true);
 
         api.setApiCallback(new PolarBleApiCallback() {
             @Override
@@ -123,6 +150,7 @@ public class AccActivity extends AppCompatActivity {
         final TextView textViewY = this.findViewById(R.id.y_text);
         final TextView textViewZ = this.findViewById(R.id.z_text);
         final TextView textViewVector = this.findViewById(R.id.vector_text);
+        final Date now = new Date();
        // final int vectorLength = 0;
 
         if (accDisposable == null) {
@@ -137,12 +165,23 @@ public class AccActivity extends AppCompatActivity {
                         @Override
                         public void accept(PolarAccelerometerData polarAccelerometerData) throws Exception {
                             for (PolarAccelerometerData.PolarAccelerometerSample data : polarAccelerometerData.samples) {
+                                double time = now.getTime();
                                 textViewX.setText("X: " + data.x);
                                 textViewY.setText("Y: " + data.y);
                                 textViewZ.setText("Z: " + data.z);
                                 int vectorLength = (int) Math.sqrt((data.x * data.x) + (data.y * data.y) +(data.z * data.z));
                                 textViewVector.setText("V: "+vectorLength);
-                                Log.d(TAG, " x: " + data.x + " y: " + data.y + " z: " + data.z+ " v: "+vectorLength);
+                                Log.d(TAG, " x: " + data.x + " y: " + data.y + " z: " + data.z+ " v: "+vectorLength
+                                + "t: "+ time);
+
+                                xLvlSeries.setModel(Arrays.asList(new Number[]{data.x}
+                                ),SimpleXYSeries.ArrayFormat.Y_VALS_ONLY);
+
+                                yLvlSeries.setModel(Arrays.asList(new Number[]{data.y}
+                                ),SimpleXYSeries.ArrayFormat.Y_VALS_ONLY);
+
+                                zLvlSeries.setModel(Arrays.asList(new Number[]{data.z}),
+                                        SimpleXYSeries.ArrayFormat.Y_VALS_ONLY);
 
 
                             }
@@ -188,5 +227,14 @@ public class AccActivity extends AppCompatActivity {
         accDisposable.dispose();
         accDisposable = null;
        // api.shutDown();
+    }
+
+    public void update(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                plot.redraw();
+            }
+        });
     }
 }

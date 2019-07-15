@@ -74,7 +74,7 @@ public class SensorDeviceArrayAdapter extends ArrayAdapter<SensorDevice>
             textViewStrength.setText("Signal strength: Good ");
         }
         //textViewStrength.setText("Signal strength: "+sensorDevice.getDeviceRssi());
-        Picasso.get().load("https://picsum.photos/200").transform(new RoundedCornersTransformation(15,1)).resize(100,100).centerCrop().into(imageView);
+        Picasso.get().load("https://picsum.photos/200.jpg?random=1").transform(new RoundedCornersTransformation(15,1)).resize(100,100).centerCrop().into(imageView);
 
 
 

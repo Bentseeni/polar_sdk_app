@@ -1,16 +1,26 @@
 package com.example.polar_sdk_app;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.protobuf.StringValue;
 
 import org.reactivestreams.Publisher;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -37,8 +47,19 @@ public class HrActivity extends AppCompatActivity {
     Disposable ppiDisposable;
     //Disposable accDisposable;
     Disposable broadcastDisposable;
+    LocationCallback locationCallback;
+    LocationRequest locationRequest;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+
+    ArrayList<Mission> arrayList = new ArrayList<Mission>();
+
+    Location lastLocation = null;
+    float travelledDistance;
+    int score;
 
     PolarBleApi api;
+
+    boolean requestingLocationUpdates = true;
 
 
 
@@ -48,10 +69,25 @@ public class HrActivity extends AppCompatActivity {
         setContentView(R.layout.activity_hr);
 
         TextView textViewId = this.findViewById(R.id.id_text);
+
         //final TextView textViewHr = this.findViewById(R.id.hr_number);
-        //TextView textViewPpg = this.findViewById(R.id.ppg_number);
-       // TextView textViewPp = this.findViewById(R.id.ppi_number);
+        final TextView textViewPpg = this.findViewById(R.id.ppg_number);
+        final TextView textViewPp = this.findViewById(R.id.ppi_number);
         final TextView textViewBatt = this.findViewById(R.id.battery_lvl_text);
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+        locationRequest = LocationRequest.create();
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(5000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        Mission mission1 = new Mission(0);
+        Mission mission2 = new Mission(1);
+        Mission mission3 = new Mission(2);
+        arrayList.add(mission1);
+        arrayList.add(mission2);
+        arrayList.add(mission3);
 
 
         DEVICE_ID = getIntent().getStringExtra("device");
@@ -136,6 +172,56 @@ public class HrActivity extends AppCompatActivity {
             polarInvalidArgument.printStackTrace();
         }
 
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null){
+                    Log.d(TAG,"no location");
+                    return;
+                }
+                for (Location location : locationResult.getLocations())
+                {
+
+                    Log.d(TAG,"speed: "+location.getSpeed() + " latitude: "+location.getLatitude()+" longitude: "+location.getLongitude());
+                    textViewPp.setText(location.getSpeed() + " m/s " + location.getSpeed()*3.6 + " km/h");
+
+
+                    if(lastLocation != null)
+                    {
+                        if(location.distanceTo(lastLocation)>3) {
+                            travelledDistance = travelledDistance + location.distanceTo(lastLocation);
+                        }
+                        Log.d(TAG, travelledDistance + " " + location.distanceTo(lastLocation));
+
+                    }
+                    lastLocation = location;
+
+                    textViewPpg.setText(travelledDistance+" m");
+
+                    for ( int i = 0 ; i < arrayList.size();i++)
+                    {
+                        if(arrayList.get(i).missionId == 1 && arrayList.get(i).getMissionValue() <= travelledDistance && arrayList.get(i).isMissionCompleted() == false)
+                        {
+                            arrayList.get(i).setMissionCompleted(true);
+                            score = score + arrayList.get(i).getMissionScore();
+                            Log.d(TAG,arrayList.get(i).getMissionName() + "completed with score of"+ arrayList.get(i).getMissionScore());
+
+                        }
+
+
+                        if(arrayList.get(i).missionId == 2 && arrayList.get(i).getMissionValue() <= location.getSpeed()*3.6 && arrayList.get(i).isMissionCompleted() == false)
+                        {
+                            arrayList.get(i).setMissionCompleted(true);
+                            score = score + arrayList.get(i).getMissionScore();
+                            Log.d(TAG,arrayList.get(i).getMissionName() + "completed with score of"+ arrayList.get(i).getMissionScore());
+
+                        }
+
+                    }
+
+                }
+            }
+        };
 
 
         findViewById(R.id.ACC_activity_button).setOnClickListener(new View.OnClickListener() {
@@ -241,6 +327,18 @@ public class HrActivity extends AppCompatActivity {
 
                     //Log.d(TAG,String.valueOf(polarHrBroadcastData.hr));
 
+                    for ( int i = 0 ; i < arrayList.size();i++)
+                    {
+                        if(arrayList.get(i).missionId == 0 && arrayList.get(i).getMissionValue() <= polarHrBroadcastData.hr && arrayList.get(i).isMissionCompleted() == false)
+                        {
+                            arrayList.get(i).setMissionCompleted(true);
+                            score = score + arrayList.get(i).getMissionScore();
+                            Log.d(TAG,arrayList.get(i).getMissionName() + "completed with score of"+ arrayList.get(i).getMissionScore());
+
+                        }
+
+                    }
+
 
                 }
             }, new Consumer<Throwable>() {
@@ -270,6 +368,9 @@ public class HrActivity extends AppCompatActivity {
             polarInvalidArgument.printStackTrace();
         }*/
         hrStream();
+        if(requestingLocationUpdates){
+            startLocationUpdates();
+        }
 
 
     }
@@ -278,6 +379,7 @@ public class HrActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         api.backgroundEntered();
+        stopLocationUpdates();
     }
 
     @Override
@@ -289,5 +391,20 @@ public class HrActivity extends AppCompatActivity {
             polarInvalidArgument.printStackTrace();
         }
         //api.shutDown();
+    }
+
+    private void startLocationUpdates(){
+        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+        {
+            Log.d(TAG,"startLocationUpdates");
+            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null);
+            requestingLocationUpdates = false;
+        }
+    }
+
+    private void stopLocationUpdates(){
+        Log.d(TAG,"stopLocationUpdates");
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+        requestingLocationUpdates = true;
     }
 }
