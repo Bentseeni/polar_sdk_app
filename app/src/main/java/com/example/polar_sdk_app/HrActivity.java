@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -55,7 +56,7 @@ public class HrActivity extends AppCompatActivity {
 
     Location lastLocation = null;
     float travelledDistance;
-    int score;
+    int score = 0;
 
     PolarBleApi api;
 
@@ -74,6 +75,8 @@ public class HrActivity extends AppCompatActivity {
         final TextView textViewPpg = this.findViewById(R.id.ppg_number);
         final TextView textViewPp = this.findViewById(R.id.ppi_number);
         final TextView textViewBatt = this.findViewById(R.id.battery_lvl_text);
+        final TextView textViewScore = this.findViewById(R.id.score_text);
+        ListView listView = this.findViewById(R.id.mission_list_view);
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -88,6 +91,10 @@ public class HrActivity extends AppCompatActivity {
         arrayList.add(mission1);
         arrayList.add(mission2);
         arrayList.add(mission3);
+
+        MissionArrayAdapter arrayAdapter = new MissionArrayAdapter(this,arrayList);
+        listView.setAdapter(arrayAdapter);
+        textViewScore.setText(score);
 
 
         DEVICE_ID = getIntent().getStringExtra("device");
@@ -205,7 +212,7 @@ public class HrActivity extends AppCompatActivity {
                             arrayList.get(i).setMissionCompleted(true);
                             score = score + arrayList.get(i).getMissionScore();
                             Log.d(TAG,arrayList.get(i).getMissionName() + "completed with score of"+ arrayList.get(i).getMissionScore());
-
+                            textViewScore.setText(score);
                         }
 
 
@@ -214,7 +221,7 @@ public class HrActivity extends AppCompatActivity {
                             arrayList.get(i).setMissionCompleted(true);
                             score = score + arrayList.get(i).getMissionScore();
                             Log.d(TAG,arrayList.get(i).getMissionName() + "completed with score of"+ arrayList.get(i).getMissionScore());
-
+                            textViewScore.setText(score);
                         }
 
                     }
@@ -320,6 +327,7 @@ public class HrActivity extends AppCompatActivity {
         if (broadcastDisposable ==null)
         {
             final TextView textViewHr = this.findViewById(R.id.hr_number);
+            final TextView textViewScore = this.findViewById(R.id.score_text);
             broadcastDisposable = api.startListenForPolarHrBroadcasts(null).subscribe(new Consumer<PolarHrBroadcastData>() {
                 @Override
                 public void accept(PolarHrBroadcastData polarHrBroadcastData) throws Exception {
@@ -334,7 +342,7 @@ public class HrActivity extends AppCompatActivity {
                             arrayList.get(i).setMissionCompleted(true);
                             score = score + arrayList.get(i).getMissionScore();
                             Log.d(TAG,arrayList.get(i).getMissionName() + "completed with score of"+ arrayList.get(i).getMissionScore());
-
+                            textViewScore.setText(score);
                         }
 
                     }
