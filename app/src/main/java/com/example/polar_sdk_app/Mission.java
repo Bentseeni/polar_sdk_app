@@ -147,4 +147,18 @@ public class Mission {
             missionUnit = "km";
         }
     }
+
+    public Mission(int id,String unit, int value,String description)
+    {
+        now = new Date();
+
+        missionName = "Custom";
+        missionId = id;
+        missionScore = 100;
+        missionUnit = unit;
+        missionValue = value;
+        missionDescription = description;
+        missionTime = now.getTime();
+        missionCompleted = false;
+    }
 }

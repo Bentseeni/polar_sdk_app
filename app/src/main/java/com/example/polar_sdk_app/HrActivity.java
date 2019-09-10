@@ -1,7 +1,11 @@
 package com.example.polar_sdk_app;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.support.v4.app.ActivityCompat;
@@ -51,17 +55,22 @@ public class HrActivity extends AppCompatActivity {
     LocationCallback locationCallback;
     LocationRequest locationRequest;
     private FusedLocationProviderClient fusedLocationProviderClient;
+    SharedPreferences sharedPreferences = this.getPreferences(Context.MODE_PRIVATE);
+    SharedPreferences.Editor editor;
+    //Context context;
 
     ArrayList<Mission> arrayList = new ArrayList<Mission>();
 
     Location lastLocation = null;
     float travelledDistance;
+    float allTravelledDistance = 0;
     int score = 0;
 
     PolarBleApi api;
 
     boolean requestingLocationUpdates = true;
 
+    //AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
 
     @Override
@@ -76,6 +85,7 @@ public class HrActivity extends AppCompatActivity {
         final TextView textViewPp = this.findViewById(R.id.ppi_number);
         final TextView textViewBatt = this.findViewById(R.id.battery_lvl_text);
         final TextView textViewScore = this.findViewById(R.id.score_text);
+        final TextView textViewAllDistance = this.findViewById(R.id.distance_text);
         ListView listView = this.findViewById(R.id.mission_list_view);
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -92,9 +102,15 @@ public class HrActivity extends AppCompatActivity {
         arrayList.add(mission2);
         arrayList.add(mission3);
 
+        score = sharedPreferences.getInt("SCORE",0);
+        allTravelledDistance = sharedPreferences.getFloat("DISTANCE",0);
+
         MissionArrayAdapter arrayAdapter = new MissionArrayAdapter(this,arrayList);
         listView.setAdapter(arrayAdapter);
         textViewScore.setText(score);
+        textViewAllDistance.setText(allTravelledDistance+" m");
+
+
 
 
         DEVICE_ID = getIntent().getStringExtra("device");
@@ -197,13 +213,16 @@ public class HrActivity extends AppCompatActivity {
                     {
                         if(location.distanceTo(lastLocation)>3) {
                             travelledDistance = travelledDistance + location.distanceTo(lastLocation);
+                            allTravelledDistance = allTravelledDistance +location.distanceTo(lastLocation);
                         }
                         Log.d(TAG, travelledDistance + " " + location.distanceTo(lastLocation));
+                        Log.d(TAG, allTravelledDistance +" "+ location.distanceTo(lastLocation));
 
                     }
                     lastLocation = location;
 
                     textViewPpg.setText(travelledDistance+" m");
+                    textViewAllDistance.setText(allTravelledDistance+" m");
 
                     for ( int i = 0 ; i < arrayList.size();i++)
                     {
@@ -393,12 +412,19 @@ public class HrActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        //sharedPreferences = this.getPreferences(Context.MODE_PRIVATE);
+        editor = sharedPreferences.edit();
+        editor.putInt("SCORE",score);
+        editor.putFloat("DISTANCE",allTravelledDistance);
+        editor.apply();
+
         try {
             api.disconnectFromDevice(DEVICE_ID);
         } catch (PolarInvalidArgument polarInvalidArgument) {
             polarInvalidArgument.printStackTrace();
         }
         //api.shutDown();
+
     }
 
     private void startLocationUpdates(){
@@ -415,4 +441,6 @@ public class HrActivity extends AppCompatActivity {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
         requestingLocationUpdates = true;
     }
+
+
 }
