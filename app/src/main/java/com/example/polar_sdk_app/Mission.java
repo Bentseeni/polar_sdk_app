@@ -8,7 +8,7 @@ public class Mission {
     String missionName;
     int missionScore;
     double missionTime;
-    int missionValue;
+    float missionValue;
     int missionId;
     String missionDescription;
     boolean missionCompleted;
@@ -51,7 +51,7 @@ public class Mission {
         this.missionTime = missionTime;
     }
 
-    public int getMissionValue() {
+    public float getMissionValue() {
         return missionValue;
     }
 
@@ -82,7 +82,7 @@ public class Mission {
             missionName = "Heart rate";
             missionScore = 100;
             missionTime = now.getTime();
-            missionValue = 90;
+            missionValue = 80;
             missionCompleted = false;
             missionDescription = "reach";
             missionUnit = "bps";
@@ -92,7 +92,7 @@ public class Mission {
             missionName = "Speed";
             missionScore = 100;
             missionTime = now.getTime();
-            missionValue = 15;
+            missionValue = 5;
             missionCompleted = false;
             missionDescription = "travel";
             missionUnit = "km/h";
@@ -102,10 +102,10 @@ public class Mission {
             missionName = "Distance";
             missionScore = 100;
             missionTime = now.getTime();
-            missionValue = 200;
+            missionValue = 2;
             missionCompleted = false;
             missionDescription = "travel";
-            missionUnit = "km";
+            missionUnit = "m";
         }
 
 
@@ -131,7 +131,7 @@ public class Mission {
             missionName = "Speed";
             missionScore = 100;
             missionTime = now.getTime();
-            missionValue = 15;
+            missionValue = 5;
             missionCompleted = false;
             missionDescription = "travel";
             missionUnit = "km/h";
@@ -141,10 +141,10 @@ public class Mission {
             missionName = "Distance";
             missionScore = 100;
             missionTime = now.getTime();
-            missionValue = 200;
+            missionValue = 5;
             missionCompleted = false;
             missionDescription = "travel";
-            missionUnit = "km";
+            missionUnit = "m";
         }
     }
 

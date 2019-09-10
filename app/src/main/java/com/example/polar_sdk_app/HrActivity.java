@@ -55,14 +55,15 @@ public class HrActivity extends AppCompatActivity {
     LocationCallback locationCallback;
     LocationRequest locationRequest;
     private FusedLocationProviderClient fusedLocationProviderClient;
-    SharedPreferences sharedPreferences = this.getPreferences(Context.MODE_PRIVATE);
+//    SharedPreferences sharedPreferences = this.getPreferences(Context.MODE_PRIVATE);
+   SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
     //Context context;
-
+    MissionArrayAdapter arrayAdapter;
     ArrayList<Mission> arrayList = new ArrayList<Mission>();
 
     Location lastLocation = null;
-    float travelledDistance;
+    float travelledDistance = 0;
     float allTravelledDistance = 0;
     int score = 0;
 
@@ -88,7 +89,11 @@ public class HrActivity extends AppCompatActivity {
         final TextView textViewAllDistance = this.findViewById(R.id.distance_text);
         ListView listView = this.findViewById(R.id.mission_list_view);
 
+
+
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+        sharedPreferences = this.getPreferences(Context.MODE_PRIVATE);
 
         locationRequest = LocationRequest.create();
         locationRequest.setInterval(10000);
@@ -102,12 +107,13 @@ public class HrActivity extends AppCompatActivity {
         arrayList.add(mission2);
         arrayList.add(mission3);
 
-        score = sharedPreferences.getInt("SCORE",0);
-        allTravelledDistance = sharedPreferences.getFloat("DISTANCE",0);
+        score = sharedPreferences.getInt("com.myapp.SCORE",0);
+        allTravelledDistance = sharedPreferences.getFloat("com.myapp.DISTANCE",0);
 
-        MissionArrayAdapter arrayAdapter = new MissionArrayAdapter(this,arrayList);
+        //final MissionArrayAdapter
+                arrayAdapter = new MissionArrayAdapter(this,arrayList);
         listView.setAdapter(arrayAdapter);
-        textViewScore.setText(score);
+        textViewScore.setText(String.valueOf(score));
         textViewAllDistance.setText(allTravelledDistance+" m");
 
 
@@ -211,7 +217,7 @@ public class HrActivity extends AppCompatActivity {
 
                     if(lastLocation != null)
                     {
-                        if(location.distanceTo(lastLocation)>3) {
+                        if(location.distanceTo(lastLocation)>1) {
                             travelledDistance = travelledDistance + location.distanceTo(lastLocation);
                             allTravelledDistance = allTravelledDistance +location.distanceTo(lastLocation);
                         }
@@ -226,21 +232,26 @@ public class HrActivity extends AppCompatActivity {
 
                     for ( int i = 0 ; i < arrayList.size();i++)
                     {
-                        if(arrayList.get(i).missionId == 1 && arrayList.get(i).getMissionValue() <= travelledDistance && arrayList.get(i).isMissionCompleted() == false)
+                        if(arrayList.get(i).missionId == 2 && arrayList.get(i).getMissionValue() <= travelledDistance && arrayList.get(i).isMissionCompleted() == false)
                         {
                             arrayList.get(i).setMissionCompleted(true);
                             score = score + arrayList.get(i).getMissionScore();
                             Log.d(TAG,arrayList.get(i).getMissionName() + "completed with score of"+ arrayList.get(i).getMissionScore());
-                            textViewScore.setText(score);
+                            textViewScore.setText(String.valueOf(score));
+                            arrayList.get(i).setMissionDescription("Completed");
+                            arrayAdapter.notifyDataSetChanged();
                         }
 
 
-                        if(arrayList.get(i).missionId == 2 && arrayList.get(i).getMissionValue() <= location.getSpeed()*3.6 && arrayList.get(i).isMissionCompleted() == false)
+                        if(arrayList.get(i).missionId == 1 && arrayList.get(i).getMissionValue() <= location.getSpeed()*3.6 && arrayList.get(i).isMissionCompleted() == false)
                         {
                             arrayList.get(i).setMissionCompleted(true);
                             score = score + arrayList.get(i).getMissionScore();
                             Log.d(TAG,arrayList.get(i).getMissionName() + "completed with score of"+ arrayList.get(i).getMissionScore());
-                            textViewScore.setText(score);
+                            textViewScore.setText(String.valueOf(score) );
+                            arrayList.get(i).setMissionDescription("Completed");
+                            arrayAdapter.notifyDataSetChanged();
+
                         }
 
                     }
@@ -361,7 +372,9 @@ public class HrActivity extends AppCompatActivity {
                             arrayList.get(i).setMissionCompleted(true);
                             score = score + arrayList.get(i).getMissionScore();
                             Log.d(TAG,arrayList.get(i).getMissionName() + "completed with score of"+ arrayList.get(i).getMissionScore());
-                            textViewScore.setText(score);
+                            textViewScore.setText(String.valueOf(score));
+                            arrayList.get(i).setMissionDescription("Completed");
+                            arrayAdapter.notifyDataSetChanged();
                         }
 
                     }
@@ -412,11 +425,11 @@ public class HrActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //sharedPreferences = this.getPreferences(Context.MODE_PRIVATE);
-        editor = sharedPreferences.edit();
-        editor.putInt("SCORE",score);
-        editor.putFloat("DISTANCE",allTravelledDistance);
-        editor.apply();
+        sharedPreferences = this.getPreferences(Context.MODE_PRIVATE);
+      editor = sharedPreferences.edit();
+        editor.putInt("com.myapp.SCORE",score);
+        editor.putFloat("com.myapp.DISTANCE",allTravelledDistance);
+       editor.apply();
 
         try {
             api.disconnectFromDevice(DEVICE_ID);

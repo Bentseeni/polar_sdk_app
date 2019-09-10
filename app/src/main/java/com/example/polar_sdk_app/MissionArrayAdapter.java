@@ -27,9 +27,9 @@ public class MissionArrayAdapter extends ArrayAdapter<Mission> {
        // return super.getView(position, convertView, parent);
 
         textViewName.setText(mission.getMissionName());
-        textViewScore.setText(mission.getMissionScore());
+        textViewScore.setText(String.valueOf(mission.getMissionScore()) );
         textViewDescription.setText(mission.getMissionDescription());
-        textViewValue.setText(mission.getMissionValue());
+        textViewValue.setText(String.valueOf(mission.getMissionValue()) );
         textViewUnit.setText(mission.getMissionUnit());
         return convertView;
     }
