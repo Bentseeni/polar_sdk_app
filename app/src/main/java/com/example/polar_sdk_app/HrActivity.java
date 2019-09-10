@@ -93,7 +93,7 @@ public class HrActivity extends AppCompatActivity {
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-        sharedPreferences = this.getPreferences(Context.MODE_PRIVATE);
+        sharedPreferences = this.getSharedPreferences("MYAPP",Context.MODE_PRIVATE);
 
         locationRequest = LocationRequest.create();
         locationRequest.setInterval(10000);
@@ -107,8 +107,11 @@ public class HrActivity extends AppCompatActivity {
         arrayList.add(mission2);
         arrayList.add(mission3);
 
-        score = sharedPreferences.getInt("com.myapp.SCORE",0);
-        allTravelledDistance = sharedPreferences.getFloat("com.myapp.DISTANCE",0);
+        score = sharedPreferences.getInt("score",0);
+       // int shit = getResources().getInteger(99);
+
+
+        allTravelledDistance = sharedPreferences.getFloat("distance",0);
 
         //final MissionArrayAdapter
                 arrayAdapter = new MissionArrayAdapter(this,arrayList);
@@ -425,11 +428,12 @@ public class HrActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        sharedPreferences = this.getPreferences(Context.MODE_PRIVATE);
+        sharedPreferences = this.getSharedPreferences("APPFILE",Context.MODE_PRIVATE);
       editor = sharedPreferences.edit();
-        editor.putInt("com.myapp.SCORE",score);
-        editor.putFloat("com.myapp.DISTANCE",allTravelledDistance);
+        editor.putInt("score_app",score);
+        editor.putFloat("distance_app",allTravelledDistance);
        editor.apply();
+
 
         try {
             api.disconnectFromDevice(DEVICE_ID);

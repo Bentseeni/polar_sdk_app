@@ -50,7 +50,7 @@ public class AccActivity extends AppCompatActivity {
 
         DEVICE_ID = getIntent().getStringExtra("DEVICE_ID");
         api = PolarApi.getInstance(this);
-
+/*
          plot = findViewById(R.id.plot);
 
         xLvlSeries = new SimpleXYSeries("X");
@@ -62,7 +62,7 @@ public class AccActivity extends AppCompatActivity {
         plot.addSeries(zLvlSeries, new BarFormatter(Color.rgb(0,0,200),Color.rgb(0,80,0)));
 
         redrawer = new Redrawer(Arrays.asList(new Plot[]{plot}
-        ),100,true);
+        ),100,true);*/
 
         api.setApiCallback(new PolarBleApiCallback() {
             @Override
@@ -173,7 +173,7 @@ public class AccActivity extends AppCompatActivity {
                                 textViewVector.setText("V: "+vectorLength);
                                 Log.d(TAG, " x: " + data.x + " y: " + data.y + " z: " + data.z+ " v: "+vectorLength
                                 + "t: "+ time);
-
+/*
                                 xLvlSeries.setModel(Arrays.asList(new Number[]{data.x}
                                 ),SimpleXYSeries.ArrayFormat.Y_VALS_ONLY);
 
@@ -181,7 +181,7 @@ public class AccActivity extends AppCompatActivity {
                                 ),SimpleXYSeries.ArrayFormat.Y_VALS_ONLY);
 
                                 zLvlSeries.setModel(Arrays.asList(new Number[]{data.z}),
-                                        SimpleXYSeries.ArrayFormat.Y_VALS_ONLY);
+                                        SimpleXYSeries.ArrayFormat.Y_VALS_ONLY);*/
 
 
                             }
